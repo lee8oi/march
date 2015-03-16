@@ -3,52 +3,20 @@ repo_name="localrepo"
 mod_dir=`pwd`/modules
 master_url="https://raw.githubusercontent.com/lee8oi/march/master/"
 
-download_lists() {
-	if [ -d $1 ]; then
-		for i in ${@:2}; do
-			wget -P $1 ${master_url}/package_lists/$i.list
-			if [ $? -ne 0 ];then
-				exit 1
-			fi
-		done
-	else
-		echo "Invalid repo '$1'"
-	fi
+mod_import() {
+	for i in $@; do
+		if [ ! -f $mod_dir/$i.sh ]; then
+			wget -P $mod_dir $master_url/modules/$i.sh
+		fi
+	done
 }
 
-remove_lists() {
-	if [ -d $1/package_lists ]; then
-		for i in ${@:2}; do
-			rm $1/package_lists/$i.list
-		done
-	fi
-}
-
-package_list() {
-	help () {
-		echo "Usage: $0 list <add|remove> <repo> <list(s)> "
-		echo "Example: $0 list add ~/localrepo/i686 base"
-	}
-	if [ $# -ge 3 ]; then 
-		case "$1" in
-			add)
-				download_lists $2/package_lists ${@:3}
-				;;
-			remove)
-				remove_lists ${@:2}
-				;;
-			*)
-				help
-				;;
-		esac
-	else
-		help
-	fi
-}
+mod_import repo lists
 
 case "$1" in
 	list) 
-		package_list ${@:2}
+		source $mod_dir/lists.sh
+		mod_lists ${@:2}
 		;;
 	repo) 
 		source $mod_dir/repo.sh
