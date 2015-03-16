@@ -27,7 +27,7 @@ zsh-syntax-highlighting
 "
 create() {
 	if [ $1 ]; then
-		mkdir $1
+		mkdir -p $1
 		if [ -d $1 ]; then
 			repo_arch=`basename $1`
 			full_path=`cd $1 ; pwd`
@@ -51,6 +51,10 @@ create() {
 }
 
 fetch () {
+	if [ $USER != "root" ]; then
+		echo "march update requires root privileges!"
+		exit 1
+	fi
 	if [ $1 ];  then
 		if [ -f $1/${repo_name}.conf ]; then
 			repo_arch=`basename $1`
