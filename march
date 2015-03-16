@@ -69,10 +69,6 @@ fetch () {
 	fi
 }
 
-pkg_get() {
-	pacman $pac_opts -Sw $@
-}
-
 update() {
 	if [ $1 ] && [ -d $1 ]; then
 		repo_update $1
