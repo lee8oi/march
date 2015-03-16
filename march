@@ -4,19 +4,6 @@ master_url="https://raw.githubusercontent.com/lee8oi/march/master/"
 packages_i686=""
 packages_x86_64=""
 packages_both="\
-base
-base-devel
-xorg-server
-xorg-server-utils
-alsa-lib
-alsa-plugins
-alsa-tools
-alsa-utils
-plasma
-phonon-qt5-vlc
-vlc
-libx264
-sddm
 tmux
 vim
 elinks
@@ -25,7 +12,7 @@ zsh
 zsh-completions
 zsh-syntax-highlighting
 "
-create() {
+create_repo() {
 	if [ $1 ]; then
 		mkdir -p $1
 		if [ -d $1 ]; then
@@ -40,7 +27,8 @@ create() {
 				echo "Invalid architecture '${repo_arch}' or broken master url"
 				exit 1
 			fi
-			mkdir $db_dir
+			mkdir $db_dir &&
+			mkdir ${full_path}/package_lists
 			if [ ! -f  $repo_conf ]; then
 				touch $repo_conf
 				#echo "db_dir=${full_path}/${1}_db" >> $repo_conf
@@ -50,7 +38,7 @@ create() {
 	fi
 }
 
-fetch () {
+fetch_packages () {
 	if [ $USER != "root" ]; then
 		echo "march update requires root privileges!"
 		exit 1
@@ -73,9 +61,9 @@ fetch () {
 	fi
 }
 
-update() {
+update_repo() {
 	if [ $1 ] && [ -d $1 ]; then
-		repo_update $1
+		repo-add $1/${repo_name}.db.tar.gz $1/*.pkg.tar.xz
 		exit 0
 	else
 		echo "Example usage: $0 update ./i686"
@@ -83,21 +71,87 @@ update() {
 	fi
 }
 
-repo_update() {
+# repo_add() {
+# 	if [ -d $1 ]; then
+# 		repo-add $1/${repo_name}.db.tar.gz $1/*.pkg.tar.xz
+# 	else
+# 		echo "Package directory not found: \"$1\""
+# 		exit 1
+# 	fi
+# }
+
+download_lists() {
 	if [ -d $1 ]; then
-		repo-add $1/${repo_name}.db.tar.gz $1/*.pkg.tar.xz
+		for i in ${@:2}; do
+			wget -P $1 ${master_url}/package_lists/$i.list
+			if [ $? -ne 0 ];then
+				exit 1
+			fi
+		done
 	else
-		echo "Package directory not found: \"$1\""
-		exit 1
+		echo "Invalid repo '$1'"
 	fi
 }
 
+remove_lists() {
+	if [ -d $1/package_lists ]; then
+		for i in ${@:2}; do
+			rm $1/package_lists/$i.list
+		done
+	fi
+}
+
+package_list() {
+	help () {
+		echo "Usage: $0 list <add|remove> <repo> <list(s)> "
+		echo "Example: $0 list add ~/localrepo/i686 base"
+	}
+	if [ $# -ge 3 ]; then 
+		case "$1" in
+			add)
+				download_lists $2/package_lists ${@:3}
+				;;
+			remove)
+				remove_lists ${@:2}
+				;;
+			*)
+				help
+				;;
+		esac
+	else
+		help
+	fi
+}
+
+package_repo() {
+	help () {
+		echo "Usage: $0 repo <create|update> <repo path>"
+		echo "Example: $0 repo create ~/localrepo/i686"
+	}
+	if [ $# -ge 2 ]; then 
+		case "$1" in
+			create)
+				create_repo $2
+				;;
+			update)
+				fetch_packages $2 &&
+				update_repo $2
+				;;
+			*)
+				help
+				;;
+		esac
+	else
+		help
+	fi
+
+}
+
 case "$1" in
-create) create $2
-	;;
-update)	fetch $2
-	update $2
-	;;
-fetch)	fetch $2
-	;;
+	list) 
+		package_list ${@:2}
+		;;
+	repo) 
+		package_repo ${@:2}
+		;;
 esac
