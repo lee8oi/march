@@ -5,9 +5,9 @@ A Bash based system customization script for Arch Linux.
 
 Generate a base local repository folder:
 ```Bash
-./march.sh create /path/to/repo/i686
+./march create /path/to/repo/i686
 ```
 Update a repo's package database based on its current configuration:
 ```Bash
-./march.sh update /path/to/repo/x86_64
+./march update /path/to/repo/x86_64
 ```
