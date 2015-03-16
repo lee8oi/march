@@ -1,17 +1,7 @@
 #!/bin/bash
 repo_name="localrepo"
 master_url="https://raw.githubusercontent.com/lee8oi/march/master/"
-packages_i686=""
-packages_x86_64=""
-packages_both="\
-tmux
-vim
-elinks
-vim-syntastic
-zsh
-zsh-completions
-zsh-syntax-highlighting
-"
+
 create_repo() {
 	if [ $1 ]; then
 		mkdir -p $1
@@ -31,7 +21,6 @@ create_repo() {
 			mkdir ${full_path}/package_lists
 			if [ ! -f  $repo_conf ]; then
 				touch $repo_conf
-				#echo "db_dir=${full_path}/${1}_db" >> $repo_conf
 				echo "pac_opts=\"--noconfirm --config $conf_file --dbpath $db_dir --cachedir $full_path\"" >> $repo_conf
 			fi
 		fi
@@ -45,19 +34,20 @@ fetch_packages () {
 	fi
 	if [ $1 ];  then
 		if [ -f $1/${repo_name}.conf ]; then
-			repo_arch=`basename $1`
-			pacman -Syu
-			pack_name=$"packages_${repo_arch}"
-			eval pkgs="\$$pack_name"
 			source $1/${repo_name}.conf
-
-			pacman $pac_opts -Syy
-			pacman $pac_opts -Sw $pkgs $packages_both
+			pacman -Syu
+			if [ -f $1/package_lists/*.list ]; then
+				pacman $pac_opts -Syy
+				pacman $pac_opts -Sw `cat $1/package_lists/*.list`
+			else
+				echo "No package lists available for $1"
+				echo "See: $0 list add"
+			fi
 		else
-			echo "Invalid repo: $1"
+			echo "Invalid repo or missing config file: $1"
 		fi
 	else
-		echo "Example usage: $0 fetch i686"
+		echo "Example usage: $0 fetch ./i686"
 	fi
 }
 
@@ -70,15 +60,6 @@ update_repo() {
 		exit 1
 	fi
 }
-
-# repo_add() {
-# 	if [ -d $1 ]; then
-# 		repo-add $1/${repo_name}.db.tar.gz $1/*.pkg.tar.xz
-# 	else
-# 		echo "Package directory not found: \"$1\""
-# 		exit 1
-# 	fi
-# }
 
 download_lists() {
 	if [ -d $1 ]; then
