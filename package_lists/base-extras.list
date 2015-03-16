@@ -13,7 +13,7 @@ xf86-video-vesa
 xf86-video-intel
 xf86-video-nouveau
 xf86-video-ati
-xf68-video-openchrome
+xf86-video-openchrome
 git
 mercurial
 subversion
