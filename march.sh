@@ -34,12 +34,13 @@ create() {
 	if [ $1 ]; then
 		mkdir $1
 		if [ -d $1 ]; then
-			full_path=`pwd`/$1
+			repo_arch=`basename $1`
+			full_path=`cd $1 ; pwd`
 			repo_conf=${full_path}/${repo_name}.conf
-			db_dir=${full_path}/${1}_db
-			conf_file=${full_path}/pacman.${1}.conf
+			db_dir=${full_path}/${repo_arch}_db
+			conf_file=${full_path}/pacman.${repo_arch}.conf
 			mkdir $db_dir
-			wget -P $full_path ${master_url}/pacman.${1}.conf
+			wget -P $full_path ${master_url}/pacman.${repo_arch}.conf
 			if [ ! -f  $repo_conf ]; then
 				touch $repo_conf
 				#echo "db_dir=${full_path}/${1}_db" >> $repo_conf
@@ -56,8 +57,9 @@ delete() {
 fetch () {
 	if [ $1 ];  then
 		if [ -f $1/${repo_name}.conf ]; then
+			repo_arch=`basename $1`
 			pacman -Syu
-			pack_name=$"packages_$1"
+			pack_name=$"packages_${repo_arch}"
 			eval pkgs="\$$pack_name"
 			source $1/${repo_name}.conf
 
