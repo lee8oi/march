@@ -1,5 +1,6 @@
 #!/bin/bash
 repo_name="localrepo"
+master_url="https://raw.githubusercontent.com/lee8oi/march/master/"
 packages_i686=""
 packages_x86_64=""
 packages_both="\
@@ -29,27 +30,42 @@ clean() {
 	return 0
 }
 
+create() {
+	if [ $1 ]; then
+		mkdir $1
+		if [ -d $1 ]; then
+			full_path=`pwd`/$1
+			repo_conf=${full_path}/${repo_name}.conf
+			db_dir=${full_path}/${1}_db
+			conf_file=${full_path}/pacman.${1}.conf
+			mkdir $db_dir
+			wget -P $full_path ${master_url}/pacman.${1}.conf
+			if [ ! -f  $repo_conf ]; then
+				touch $repo_conf
+				#echo "db_dir=${full_path}/${1}_db" >> $repo_conf
+				echo "pac_opts=\"--noconfirm --config $conf_file --dbpath $db_dir --cachedir $full_path\"" >> $repo_conf
+			fi
+		fi
+	fi
+}
+
 delete() {
 	rm -rf *_db i686 x86_64
 }
 
 fetch () {
-	if [ $1 ]; then
-		pacman -Syu
-		pack_name=$"packages_$1"
-		eval pkgs="\$$pack_name"
-		cache_dir=`pwd`/$1
-		db_dir=`pwd`/${1}_db
-		conf_file=`pwd`/pacman.${1}.conf
-		pac_opts="--noconfirm --config $conf_file
-		--dbpath $db_dir --cachedir $cache_dir"
+	if [ $1 ];  then
+		if [ -f $1/${repo_name}.conf ]; then
+			pacman -Syu
+			pack_name=$"packages_$1"
+			eval pkgs="\$$pack_name"
+			source $1/${repo_name}.conf
 
-		mkdir $1 &> /dev/null
-		mkdir $db_dir &> /dev/null
-		mkdir $cache_dir &> /dev/null
-
-		pacman $pac_opts -Syy
-		pacman $pac_opts -Sw $pkgs $packages_both
+			pacman $pac_opts -Syy
+			pacman $pac_opts -Sw $pkgs $packages_both
+		else
+			echo "Invalid repo: $1"
+		fi
 	else
 		echo "Example usage: $0 fetch i686"
 	fi
@@ -81,6 +97,8 @@ repo_update() {
 case "$1" in
 clean)	clean
 	exit 0
+	;;
+create) create $2
 	;;
 delete) delete
 	;;
