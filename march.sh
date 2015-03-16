@@ -39,8 +39,13 @@ create() {
 			repo_conf=${full_path}/${repo_name}.conf
 			db_dir=${full_path}/${repo_arch}_db
 			conf_file=${full_path}/pacman.${repo_arch}.conf
-			mkdir $db_dir
 			wget -P $full_path ${master_url}/pacman.${repo_arch}.conf
+			if [ $? -ne 0 ]; then
+				echo "Config download failed!"
+				echo "Invalid architecture '${repo_arch}' or broken master url"
+				exit 1
+			fi
+			mkdir $db_dir
 			if [ ! -f  $repo_conf ]; then
 				touch $repo_conf
 				#echo "db_dir=${full_path}/${1}_db" >> $repo_conf
