@@ -25,11 +25,6 @@ zsh
 zsh-completions
 zsh-syntax-highlighting
 "
-clean() {
-	rm -rf *_db *~
-	return 0
-}
-
 create() {
 	if [ $1 ]; then
 		mkdir $1
@@ -53,10 +48,6 @@ create() {
 			fi
 		fi
 	fi
-}
-
-delete() {
-	rm -rf *_db i686 x86_64
 }
 
 fetch () {
@@ -102,12 +93,7 @@ repo_update() {
 }
 
 case "$1" in
-clean)	clean
-	exit 0
-	;;
 create) create $2
-	;;
-delete) delete
 	;;
 update)	fetch $2
 	update $2
