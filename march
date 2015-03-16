@@ -4,6 +4,9 @@ mod_dir=`pwd`/modules
 master_url="https://raw.githubusercontent.com/lee8oi/march/master/"
 
 mod_import() {
+	if [ ! -d $mod_dir ]; then
+		mkdir -p $mod_dir
+	fi
 	for i in $@; do
 		if [ ! -f $mod_dir/$i.sh ]; then
 			wget -P $mod_dir $master_url/modules/$i.sh
