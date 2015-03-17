@@ -10,10 +10,6 @@ git
 mercurial
 subversion
 unzip
-alsa-lib
-alsa-plugins
-alsa-tools
-alsa-utils
 tmux
 vim
 vim-syntastic
